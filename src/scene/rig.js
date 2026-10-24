@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { canvasTexture, radialTexture } from './util.js';
 import { drawLineMaterial, polylineSegments } from './lines.js';
+import { createPS5, createSoundbar, createWheel } from './hardware.js';
 
 export const RIG_SPOTS = {
   main: new THREE.Vector3(0, 0, -86),
@@ -126,61 +127,17 @@ function resolutionFrame(accent) {
   return { group, lineMat: mat, materials: [labelMat] };
 }
 
-// Abstract console tower with a speaker bar: a stand-in shape, not a model of real hardware.
-function consoleTower(accent) {
-  const group = new THREE.Group();
-  const shell = new THREE.MeshStandardMaterial({ color: '#e9edf3', metalness: 0.2, roughness: 0.35, transparent: true });
-  const core = new THREE.MeshStandardMaterial({ color: '#0b0d12', metalness: 0.6, roughness: 0.4, transparent: true });
-  const glow = new THREE.MeshBasicMaterial({ color: accent, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-  const body = new THREE.Mesh(new RoundedBoxGeometry(0.7, 3.4, 2.2, 3, 0.18), core);
-  const finL = new THREE.Mesh(new RoundedBoxGeometry(0.12, 3.8, 2.5, 3, 0.05), shell);
-  const finR = finL.clone();
-  finL.position.x = -0.42;
-  finR.position.x = 0.42;
-  const led = new THREE.Mesh(new THREE.BoxGeometry(0.06, 3.2, 0.04), glow);
-  led.position.set(0, 0, 1.12);
-  const bar = new THREE.Mesh(new RoundedBoxGeometry(3.6, 0.35, 0.5, 3, 0.12), core);
-  bar.position.set(2.6, -1.55, 0.6);
-  const barLed = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.03, 0.02), glow);
-  barLed.position.set(2.6, -1.55, 0.86);
-  group.add(body, finL, finR, led, bar, barLed);
-  group.rotation.y = 0.45;
-  group.scale.setScalar(0.8);
-  return { group, materials: [shell, core, glow] };
-}
-
-function wheel(accent, lowPoly) {
-  const group = new THREE.Group();
-  const metal = new THREE.MeshStandardMaterial({ color: '#7d8794', metalness: 1, roughness: 0.3, transparent: true });
-  const grip = new THREE.MeshStandardMaterial({ color: '#121418', metalness: 0.3, roughness: 0.8, transparent: true });
-  const glowMat = new THREE.MeshBasicMaterial({ color: accent, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-  const rim = new THREE.Mesh(new THREE.TorusGeometry(1.7, 0.14, lowPoly ? 10 : 18, lowPoly ? 64 : 120), grip);
-  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.25, lowPoly ? 24 : 48), metal);
-  hub.rotation.x = Math.PI / 2;
-  const spokes = [0, (Math.PI * 2) / 3, (Math.PI * 4) / 3].map((a) => {
-    const sp = new THREE.Mesh(new THREE.BoxGeometry(0.22, 1.35, 0.08), metal);
-    sp.position.set(Math.sin(a) * 0.95, -Math.cos(a) * 0.95, 0);
-    sp.rotation.z = a;
-    return sp;
-  });
-  const marker = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.3, 0.3), glowMat);
-  marker.position.y = 1.7;
-  const ledRing = new THREE.Mesh(new THREE.TorusGeometry(1.95, 0.01, 6, 120), glowMat);
-  group.add(rim, hub, ...spokes, marker, ledRing);
-  group.rotation.set(-0.25, -0.45, 0);
-
-  // speed streaks
+function speedStreaks(accent, lowPoly) {
   const n = lowPoly ? 50 : 110;
   const strokes = [];
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2;
-    const r = 2.6 + Math.random() * 3;
+    const r = 2.8 + Math.random() * 3;
     const z = -Math.random() * 8;
     strokes.push({ points: [new THREE.Vector3(Math.cos(a) * r, Math.sin(a) * r, z), new THREE.Vector3(Math.cos(a) * r, Math.sin(a) * r, z + 0.6 + Math.random() * 1.6)] });
   }
-  const streakMat = new THREE.LineBasicMaterial({ color: accent, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
-  const streaks = new THREE.LineSegments(polylineSegments(strokes), streakMat);
-  return { group, streaks, materials: [metal, grip, glowMat, streakMat] };
+  const mat = new THREE.LineBasicMaterial({ color: accent, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
+  return { lines: new THREE.LineSegments(polylineSegments(strokes), mat), material: mat };
 }
 
 export class Rig {
@@ -192,11 +149,23 @@ export class Rig {
     b.group.position.copy(RIG_SPOTS.stream);
     const frame = resolutionFrame('#ffb35c');
     frame.group.position.copy(RIG_SPOTS.peripherals);
-    const wh = wheel('#ffb35c', lowPoly);
+    const wh = createWheel(lowPoly);
     wh.group.position.copy(RIG_SPOTS.sim);
-    const cs = consoleTower('#5b8cff');
+    wh.group.rotation.set(-0.12, -0.42, 0);
+    const streaks = speedStreaks('#ffb35c', lowPoly);
+    streaks.lines.position.copy(RIG_SPOTS.sim);
+
+    const ps5 = createPS5();
+    const bar = createSoundbar();
+    ps5.group.position.y = -0.35;
+    ps5.group.scale.setScalar(0.78);
+    bar.group.position.set(2.0, -1.95, 1.4);
+    bar.group.scale.setScalar(0.75);
+    bar.group.rotation.y = -0.2;
+    const cs = { group: new THREE.Group(), materials: [...ps5.materials, ...bar.materials] };
+    cs.group.add(ps5.group, bar.group);
     cs.group.position.copy(RIG_SPOTS.console);
-    wh.streaks.position.copy(RIG_SPOTS.sim);
+    this.ps5 = ps5.group;
 
     // metallic stage floor with a soft radial falloff
     const floorMat = new THREE.MeshStandardMaterial({
@@ -222,14 +191,15 @@ export class Rig {
       return cone;
     });
 
-    this.group.add(a.group, b.group, frame.group, cs.group, wh.group, wh.streaks, floor, ...cones);
+    this.group.add(a.group, b.group, frame.group, cs.group, wh.group, streaks.lines, floor, ...cones);
+    this.streaks = streaks.lines;
     this.console = cs.group;
     this.cores = [a.group, b.group];
     this.frame = frame;
     this.wheel = wh;
     this.coneMat = coneMat;
     this.floorMat = floorMat;
-    this.materials = [...a.materials, ...b.materials, ...frame.materials, ...wh.materials, ...cs.materials, floorMat];
+    this.materials = [...a.materials, ...b.materials, ...frame.materials, ...wh.materials, streaks.material, ...cs.materials, floorMat];
     for (const m of this.materials) m.userData.baseOpacity = m.opacity;
   }
 
@@ -250,8 +220,8 @@ export class Rig {
       ring1.rotation.z = time * 0.25 + spin;
       ring2.rotation.z = -time * 0.18 - spin * 0.6;
     });
-    this.console.rotation.y = 0.45 + Math.sin(time * 0.3) * 0.12;
-    this.wheel.group.rotation.z = Math.sin(time * 0.7) * 0.35 + spin * 0.4;
-    this.wheel.streaks.position.z = RIG_SPOTS.sim.z + ((time * 6) % 8);
+    this.ps5.rotation.y = -0.55 + Math.sin(time * 0.3) * 0.15;
+    this.wheel.steer.rotation.z = Math.sin(time * 0.7) * 0.45 + Math.sin(spin * 2) * 0.2;
+    this.streaks.position.z = RIG_SPOTS.sim.z + ((time * 6) % 8);
   }
 }

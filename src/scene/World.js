@@ -28,6 +28,10 @@ export class World {
     this.scene = new THREE.Scene();
     this.scene.environment = createEnvironment(this.renderer);
     this.scene.fog = new THREE.Fog(0x000000, 14, 70);
+    // one cheap key light (no shadows) so matte hardware reads as real objects
+    const key = new THREE.DirectionalLight('#ffffff', 1.6);
+    key.position.set(-0.5, 1, 0.8);
+    this.scene.add(key, new THREE.HemisphereLight('#b8c8ff', '#0a0a0c', 0.35));
 
     this.camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.1, 400);
     this.target = new THREE.Vector3();
@@ -68,7 +72,8 @@ export class World {
     this.time = 0;
     this.perf = { acc: 0, frames: 0, slow: 0 };
     this.dprScale = 1; // lowered by adapt() when the GPU struggles
-    this.pending = 0; // time accumulated since the last rendered frame
+    this.pending = 0; // frame-pacing accumulator
+    this.sinceRender = 0; // real time since the last rendered frame
     this.running = true;
 
     if (!quality.touch) {
@@ -101,12 +106,15 @@ export class World {
 
   frame(rawDt) {
     if (!this.running) return;
-    // On 120–240Hz monitors, render at most ~85fps: the scene looks the same
-    // and the GPU does a half to a third of the work.
+    // Steady 60fps: on 120–240Hz monitors frames are skipped evenly so the
+    // average stays at 60 instead of rendering every refresh.
+    const interval = 1 / 60;
     this.pending += rawDt;
-    if (this.pending < 1 / 85 - 0.0008) return;
-    const dt = Math.min(this.pending, 0.05);
-    this.pending = 0;
+    this.sinceRender += rawDt;
+    if (this.pending < interval - 0.002) return;
+    this.pending = Math.min(this.pending - interval, interval);
+    const dt = Math.min(this.sinceRender, 0.05);
+    this.sinceRender = 0;
     this.time += dt;
     const t = this.time;
     const s = this.getState();
@@ -165,13 +173,14 @@ export class World {
     const fps = p.frames / p.acc;
     p.acc = 0;
     p.frames = 0;
-    if (fps > 50 || this.time < 3) { p.slow = 0; return; }
+    if (fps > 45 || this.time < 3) { p.slow = 0; return; }
     if (++p.slow < 2) return;
     p.slow = 0;
-    if (this.bloom?.enabled && this.dprScale <= 0.85) {
+    // Shed effects before resolution, and never go blurrier than 85%.
+    if (this.bloom?.enabled) {
       this.bloom.enabled = false;
-    } else if (this.dprScale > 0.6) {
-      this.dprScale = Math.max(0.6, this.dprScale - 0.15);
+    } else if (this.dprScale > 0.85) {
+      this.dprScale = 0.85;
       this.resize();
     }
   }

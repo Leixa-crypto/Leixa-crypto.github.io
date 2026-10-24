@@ -23,15 +23,19 @@ function probeGpu() {
   }
 }
 
-// Max rendered pixels per frame. Text stays crisp regardless (it's DOM).
-const PIXEL_BUDGET = { high: 2.3e6, mid: 1.6e6, low: 1.1e6 };
-const DPR_CAP = { high: 1.5, mid: 1.25, low: 1.25 };
+// The 3D canvas targets a full 1920×1080 frame on desktop: a 1080p screen
+// renders at native resolution, larger screens render ~1080p worth of pixels.
+const FULL_HD = 1920 * 1080;
+const PIXEL_BUDGET = { high: FULL_HD, mid: FULL_HD, low: 1.1e6 };
+const DPR_CAP = { high: 1.5, mid: 1.5, low: 1.25 };
 
 /** Device pixel ratio for the canvas, capped by tier and a pixel budget. */
 export function pixelRatioFor(tier, w = innerWidth, h = innerHeight) {
   const native = window.devicePixelRatio || 1;
   const byBudget = Math.sqrt(PIXEL_BUDGET[tier] / Math.max(1, w * h));
-  return Math.max(0.7, Math.min(native, DPR_CAP[tier], byBudget));
+  const dpr = Math.min(native, DPR_CAP[tier], byBudget);
+  // a ≤1080p screen always gets its own full resolution
+  return w * h <= FULL_HD * 1.02 ? Math.max(dpr, Math.min(native, 1)) : dpr;
 }
 
 export function detectQuality() {
@@ -67,7 +71,7 @@ export function detectQuality() {
     gpu,
     dpr: pixelRatioFor(tier),
     bloom: tier !== 'low',
-    msaa: tier === 'high' ? 2 : 0,
+    msaa: { high: 4, mid: 2, low: 0 }[tier],
     stars: { high: 1800, mid: 1100, low: 650 }[tier],
   };
 }
