@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>LEIXA // FXKIO</title>
+    <meta name="description" content="LEIXA // FXKIO — FPS competitor, sim racer and content creator. Valorant, Roblox, CS2, sim racing, a dual-PC battlestation and the Discord squad." />
+    <meta name="theme-color" content="#04060a" />
+    <meta property="og:title" content="LEIXA // FXKIO" />
+    <meta property="og:description" content="FPS COMPETITOR // SIM RACER // CONTENT CREATOR" />
+    <meta property="og:image" content="media/avatar-umi-asanagi-square.jpg" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="skip" href="#edpi">Skip to the eDPI calculator</a>
+
+    <canvas id="webgl" aria-hidden="true"></canvas>
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- Loader / intro veil -->
+    <div class="veil" aria-hidden="true">
+      <div class="veil__dot"></div>
+      <div class="veil__count"><span data-count>00</span></div>
+    </div>
+
+    <header class="topbar">
+      <a class="brand" href="#top" data-nav="hero" aria-label="LEIXA // FXKIO, back to start">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <span>LEIXA <i>//</i> FXKIO</span>
+      </a>
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" data-menu>Menu</button>
+      <nav class="nav" id="site-nav" aria-label="Sections">
+        <a href="#identity" data-nav="identity">Identity</a>
+        <a href="#battlestation" data-nav="battlestation">Battlestation</a>
+        <a href="#community" data-nav="community">Community</a>
+        <a href="#video" data-nav="video">Video</a>
+        <a href="#edpi" data-nav="edpi">eDPI</a>
+      </nav>
+      <button class="motion-toggle" type="button" aria-pressed="false" data-motion-toggle>
+        <span class="motion-toggle__dot" aria-hidden="true"></span><span data-motion-label>Motion on</span>
+      </button>
+    </header>
+
+    <aside class="rail" aria-hidden="true">
+      <div class="rail__num"><span data-rail-index>01</span><i>/</i><span>08</span></div>
+      <div class="rail__bar"><span data-rail-fill></span></div>
+      <div class="rail__label" data-rail-label>LEIXA</div>
+    </aside>
+
+    <main id="top">
+      <!-- ============================================ PINNED JOURNEY -->
+      <section class="journey" id="journey" aria-label="LEIXA cinematic journey">
+        <div class="stage">
+
+          <!-- 01 · HERO -->
+          <div class="scene scene--hero" id="hero" data-scene="hero">
+            <p class="hero__title-fallback" aria-hidden="true">LEIXA</p>
+            <div class="hero__lockup">
+              <h1 class="hero__name"><span class="split" data-split>LEIXA</span> <i>//</i> <span class="split" data-split>FXKIO</span></h1>
+              <p class="hero__tagline">FPS COMPETITOR <i>//</i> SIM RACER <i>//</i> CONTENT CREATOR</p>
+            </div>
+            <div class="hero__bottom">
+              <div class="hero__meta">
+                <span>VALORANT · LEIXA#777</span>
+                <span>1440 × 1080 · 4:3 STRETCHED</span>
+              </div>
+              <div class="scroll-hint"><span class="scroll-hint__line" aria-hidden="true"></span><span>Scroll to explore</span></div>
+            </div>
+          </div>
+
+          <!-- 02 · WORLD -->
+          <div class="scene scene--world" data-scene="world">
+            <p class="kicker">02 — ENTERING THE WORLD</p>
+            <h2 class="display world__title">
+              <span class="line"><span>A DIGITAL</span></span>
+              <span class="line"><span>UNIVERSE BUILT</span></span>
+              <span class="line"><span>AROUND <em>LEIXA</em></span></span>
+            </h2>
+            <p class="world__copy">Valorant. Roblox. Counter-Strike 2. Sim racing. Two PCs and a whole community. Keep scrolling. The camera does the rest.</p>
+            <ul class="world__tags" data-interests></ul>
+          </div>
+
+          <!-- 03 · IDENTITY -->
+          <div class="scene scene--identity" id="identity" data-scene="identity">
+            <div class="scene__head">
+              <p class="kicker">03 — GAMING IDENTITY</p>
+              <h2 class="display display--md">PLAYER<br />SIGNALS</h2>
+            </div>
+            <div class="id-hud" data-id-hud></div>
+            <ol class="id-steps" data-id-steps aria-hidden="true"></ol>
+          </div>
+
+          <!-- 04 · BATTLESTATION -->
+          <div class="scene scene--rig" id="battlestation" data-scene="battlestation">
+            <div class="rig__bigword" aria-hidden="true"><span>DUAL</span><span>CORE</span></div>
+            <div class="scene__head">
+              <p class="kicker">04 — DUAL-PC BATTLESTATION</p>
+              <h2 class="display display--md">TWO PCS.<br />ZERO<br />COMPROMISE.</h2>
+              <p class="rig__note">3D cores are abstract renders, not photos of the hardware.</p>
+            </div>
+            <div class="rig__panels" data-rig-panels></div>
+            <ol class="rig__tabs" data-rig-tabs aria-hidden="true"></ol>
+          </div>
+
+          <!-- 05 · COMMUNITY -->
+          <div class="scene scene--discord" id="community" data-scene="community">
+            <div class="discord__words" aria-hidden="true" data-discord-words></div>
+            <div class="discord__panel">
+              <p class="kicker">05 — DISCORD COMMUNITY</p>
+              <h2 class="display display--md">THE SQUAD<br />IS ONLINE.</h2>
+              <ul class="discord__acts" data-activities></ul>
+              <div class="discord__cta" data-discord-cta></div>
+            </div>
+          </div>
+
+          <!-- 06 · TIKTOK + VIDEO -->
+          <div class="scene scene--video" id="video" data-scene="video">
+            <div class="video__head">
+              <p class="kicker">06 — FEATURED VIDEO</p>
+              <h2 class="display display--md">LEIXA<br />ON TIKTOK</h2>
+              <div class="creator">
+                <img class="creator__avatar" data-avatar width="72" height="72" alt="" decoding="async" />
+                <div>
+                  <p class="creator__handle" data-tiktok-handle>@thx_fxkio</p>
+                  <p class="creator__sub" data-video-title></p>
+                </div>
+              </div>
+              <div class="video__actions" data-tiktok-actions></div>
+            </div>
+            <div class="player" data-player>
+              <div class="player__frame">
+                <video class="player__video" data-video playsinline muted loop preload="none" controls></video>
+                <button class="player__play" type="button" data-video-play aria-label="Play featured video">
+                  <span aria-hidden="true"></span>
+                </button>
+              </div>
+              <div class="player__bar">
+                <label class="switch">
+                  <input type="checkbox" data-autoplay-toggle checked />
+                  <span class="switch__ui" aria-hidden="true"></span>
+                  Muted preview
+                </label>
+                <button type="button" class="chip-btn" data-video-sound>Sound on</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================================ eDPI (normal flow) -->
+      <section class="edpi" id="edpi" aria-labelledby="edpi-title">
+        <div class="edpi__inner">
+          <div class="edpi__head">
+            <p class="kicker">07 — UTILITY</p>
+            <h2 class="display display--md edpi__title" id="edpi-title"><span class="no-upper">eDPI</span><br />CALCULATOR</h2>
+            <p class="edpi__lead">eDPI = DPI × in-game sensitivity. cm/360 uses Valorant's yaw of 0.07° per count.</p>
+          </div>
+          <form class="calc" data-calc novalidate>
+            <div class="calc__inputs">
+              <label class="field">
+                <span class="field__label">Mouse DPI</span>
+                <input class="field__input" name="dpi" type="number" inputmode="numeric" min="50" max="32000" step="1" value="800" required aria-describedby="dpi-msg" />
+                <span class="field__msg" id="dpi-msg" aria-live="polite"></span>
+              </label>
+              <label class="field">
+                <span class="field__label">Valorant sensitivity</span>
+                <input class="field__input" name="sens" type="number" inputmode="decimal" min="0.001" max="10" step="0.001" value="0.35" required aria-describedby="sens-msg" />
+                <span class="field__msg" id="sens-msg" aria-live="polite"></span>
+              </label>
+            </div>
+            <div class="calc__out" aria-live="polite">
+              <div class="stat"><span class="stat__k">DPI</span><span class="stat__v" data-out="dpi">800</span></div>
+              <div class="stat"><span class="stat__k">Sensitivity</span><span class="stat__v" data-out="sens">0.35</span></div>
+              <div class="stat stat--hero"><span class="stat__k">eDPI</span><span class="stat__v" data-out="edpi">280</span></div>
+              <div class="stat stat--hero"><span class="stat__k">cm / 360°</span><span class="stat__v" data-out="cm">46.65</span></div>
+            </div>
+            <p class="calc__note">Stretched 4:3 (1440 × 1080) doesn't change your cm/360. It only makes horizontal movement look faster on screen.</p>
+            <div class="calc__actions">
+              <button type="button" class="btn btn--ghost" data-calc-reset>Reset</button>
+              <button type="button" class="btn" data-calc-copy>Copy result</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ============================================ SIGNATURE -->
+      <section class="signature" id="signature" aria-labelledby="sig-title">
+        <div class="sig__stage">
+          <div class="sig__copy">
+            <h2 class="sig__title" id="sig-title"><span class="split" data-split>THIS IS LEIXA.</span></h2>
+            <p class="sig__line">ONE SETUP. TWO PCS. ONE GAMING WORLD.</p>
+            <div class="sig__actions" data-sig-actions></div>
+          </div>
+        </div>
+        <footer class="footer">
+          <nav class="footer__nav" aria-label="Footer">
+            <a href="#identity" data-nav="identity">Identity</a>
+            <a href="#battlestation" data-nav="battlestation">Battlestation</a>
+            <a href="#community" data-nav="community">Community</a>
+            <a href="#video" data-nav="video">Video</a>
+            <a href="#edpi" data-nav="edpi">eDPI</a>
+          </nav>
+          <p class="footer__small">LEIXA // FXKIO · Valorant Leixa#777 · Roblox fxkio999 · TikTok @thx_fxkio</p>
+        </footer>
+      </section>
+    </main>
+
+    <div class="toast" role="status" aria-live="polite" data-toast></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
