@@ -253,7 +253,7 @@ i { font-style: normal; color: var(--cyan); }
 .spec-panel__title { font: 800 clamp(18px, 1.7vw, 24px) var(--display); margin: 10px 0 18px; }
 .spec { display: grid; grid-template-columns: 120px 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); align-items: center; }
 .spec dt { font: 500 11px var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
-.spec dd { text-align: right; font-size: 15px; }
+.spec dd { text-align: right; font-size: 13.5px; line-height: 1.35; }
 .skeleton {
   display: inline-block; width: 110px; height: 8px; border-radius: 4px; vertical-align: middle;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
@@ -290,7 +290,6 @@ i { font-style: normal; color: var(--cyan); }
 .creator { display: flex; align-items: center; gap: 14px; margin-top: 26px; }
 .creator__avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #ff4f86; box-shadow: 0 0 24px rgba(255, 79, 134, 0.4); }
 .creator__handle { font: 800 18px var(--display); }
-.creator__sub { color: var(--muted); font-size: 13px; }
 .video__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
 .player { justify-self: end; width: min(100%, 880px); transform-style: preserve-3d; }
 .motion .player { visibility: hidden; opacity: 0; }
@@ -370,14 +369,17 @@ i { font-style: normal; color: var(--cyan); }
 }
 .toast.is-on { opacity: 1; transform: translate(-50%, 0); }
 
-/* Low-tier devices: skip backdrop blur over the live WebGL canvas. */
-[data-tier='low'] .id-card, [data-tier='low'] .spec-panel, [data-tier='low'] .discord__panel,
-[data-tier='low'] .calc, [data-tier='low'] .btn--ghost, [data-tier='low'] .player__play {
+/* Over the live WebGL canvas, backdrop blur forces the browser to re-blur the
+   scene behind every panel on every frame. Use solid glass instead. */
+.motion .id-card, .motion .spec-panel, .motion .discord__panel, .motion .calc,
+.motion .btn--ghost, .motion .player__play, .motion .glass {
   -webkit-backdrop-filter: none; backdrop-filter: none;
 }
-[data-tier='low'] .id-card, [data-tier='low'] .spec-panel { background: rgba(8, 12, 20, 0.88); }
-[data-tier='low'] .discord__panel { background: rgba(10, 10, 38, 0.9); }
-[data-tier='low'] .calc { background: rgba(4, 18, 16, 0.9); }
+.motion .id-card, .motion .spec-panel { background: rgba(7, 10, 17, 0.86); }
+.motion .discord__panel { background: rgba(10, 10, 36, 0.86); }
+.motion .calc { background: rgba(4, 16, 14, 0.88); }
+.motion .btn--ghost { background: rgba(6, 8, 14, 0.8); }
+.motion .player__play { background: rgba(5, 7, 12, 0.7); }
 
 /* ================================================================ LITE */
 .lite .journey { height: auto; }
@@ -445,5 +447,5 @@ i { font-style: normal; color: var(--cyan); }
   .hero__bottom { justify-content: center; }
 }
 @media (max-height: 640px) and (max-width: 900px) {
-  .video__head .kicker, .creator__sub, .scene--video .display br { display: none; }
+  .video__head .kicker, .scene--video .display br { display: none; }
 }

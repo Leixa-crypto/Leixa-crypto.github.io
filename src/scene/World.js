@@ -11,6 +11,7 @@ import { MediaRing } from './media.js';
 import { Range } from './range.js';
 import { FinaleGuides } from './finale.js';
 import { damp, radialTexture } from './util.js';
+import { pixelRatioFor } from '../quality.js';
 
 export class World {
   constructor(canvas, quality, { videoEl, avatarImage, cards, stills }) {
@@ -66,6 +67,8 @@ export class World {
     this.palette = {};
     this.time = 0;
     this.perf = { acc: 0, frames: 0, slow: 0 };
+    this.dprScale = 1; // lowered by adapt() when the GPU struggles
+    this.pending = 0; // time accumulated since the last rendered frame
     this.running = true;
 
     if (!quality.touch) {
@@ -80,6 +83,7 @@ export class World {
     const w = innerWidth;
     const h = innerHeight;
     this.camera.aspect = w / h;
+    this.renderer.setPixelRatio(pixelRatioFor(this.quality.tier, w, h) * this.dprScale);
     this.renderer.setSize(w, h, false);
     this.composer.setPixelRatio(this.renderer.getPixelRatio());
     this.composer.setSize(w, h);
@@ -95,9 +99,14 @@ export class World {
     return Math.min(95, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hHalf) / a)));
   }
 
-  frame(dt) {
+  frame(rawDt) {
     if (!this.running) return;
-    dt = Math.min(dt, 0.05);
+    // On 120–240Hz monitors, render at most ~85fps: the scene looks the same
+    // and the GPU does a half to a third of the work.
+    this.pending += rawDt;
+    if (this.pending < 1 / 85 - 0.0008) return;
+    const dt = Math.min(this.pending, 0.05);
+    this.pending = 0;
     this.time += dt;
     const t = this.time;
     const s = this.getState();
@@ -152,19 +161,18 @@ export class World {
     const p = this.perf;
     p.acc += dt;
     p.frames++;
-    if (p.acc < 1.5) return;
+    if (p.acc < 1) return;
     const fps = p.frames / p.acc;
     p.acc = 0;
     p.frames = 0;
-    if (fps > 45 || this.time < 4) { p.slow = 0; return; }
+    if (fps > 50 || this.time < 3) { p.slow = 0; return; }
     if (++p.slow < 2) return;
     p.slow = 0;
-    const dpr = this.renderer.getPixelRatio();
-    if (dpr > 0.8) {
-      this.renderer.setPixelRatio(Math.max(0.75, dpr - 0.25));
-      this.resize();
-    } else if (this.bloom && this.bloom.enabled) {
+    if (this.bloom?.enabled && this.dprScale <= 0.85) {
       this.bloom.enabled = false;
+    } else if (this.dprScale > 0.6) {
+      this.dprScale = Math.max(0.6, this.dprScale - 0.15);
+      this.resize();
     }
   }
 }

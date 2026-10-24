@@ -7,7 +7,8 @@ export const RIG_SPOTS = {
   main: new THREE.Vector3(0, 0, -86),
   stream: new THREE.Vector3(5.5, 0.3, -98),
   peripherals: new THREE.Vector3(-5, 0.6, -110),
-  sim: new THREE.Vector3(4.5, 0.1, -122),
+  console: new THREE.Vector3(-10, 0.3, -124),
+  sim: new THREE.Vector3(4.5, 0.1, -134),
 };
 
 function circuitTexture(accent) {
@@ -125,6 +126,29 @@ function resolutionFrame(accent) {
   return { group, lineMat: mat, materials: [labelMat] };
 }
 
+// Abstract console tower with a speaker bar: a stand-in shape, not a model of real hardware.
+function consoleTower(accent) {
+  const group = new THREE.Group();
+  const shell = new THREE.MeshStandardMaterial({ color: '#e9edf3', metalness: 0.2, roughness: 0.35, transparent: true });
+  const core = new THREE.MeshStandardMaterial({ color: '#0b0d12', metalness: 0.6, roughness: 0.4, transparent: true });
+  const glow = new THREE.MeshBasicMaterial({ color: accent, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+  const body = new THREE.Mesh(new RoundedBoxGeometry(0.7, 3.4, 2.2, 3, 0.18), core);
+  const finL = new THREE.Mesh(new RoundedBoxGeometry(0.12, 3.8, 2.5, 3, 0.05), shell);
+  const finR = finL.clone();
+  finL.position.x = -0.42;
+  finR.position.x = 0.42;
+  const led = new THREE.Mesh(new THREE.BoxGeometry(0.06, 3.2, 0.04), glow);
+  led.position.set(0, 0, 1.12);
+  const bar = new THREE.Mesh(new RoundedBoxGeometry(3.6, 0.35, 0.5, 3, 0.12), core);
+  bar.position.set(2.6, -1.55, 0.6);
+  const barLed = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.03, 0.02), glow);
+  barLed.position.set(2.6, -1.55, 0.86);
+  group.add(body, finL, finR, led, bar, barLed);
+  group.rotation.y = 0.45;
+  group.scale.setScalar(0.8);
+  return { group, materials: [shell, core, glow] };
+}
+
 function wheel(accent, lowPoly) {
   const group = new THREE.Group();
   const metal = new THREE.MeshStandardMaterial({ color: '#7d8794', metalness: 1, roughness: 0.3, transparent: true });
@@ -170,6 +194,8 @@ export class Rig {
     frame.group.position.copy(RIG_SPOTS.peripherals);
     const wh = wheel('#ffb35c', lowPoly);
     wh.group.position.copy(RIG_SPOTS.sim);
+    const cs = consoleTower('#5b8cff');
+    cs.group.position.copy(RIG_SPOTS.console);
     wh.streaks.position.copy(RIG_SPOTS.sim);
 
     // metallic stage floor with a soft radial falloff
@@ -177,9 +203,9 @@ export class Rig {
       color: '#1a1d22', metalness: 0.92, roughness: 0.38, transparent: true,
       alphaMap: radialTexture(256, 'rgba(255,255,255,1)'), envMapIntensity: 0.9,
     });
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 60), floorMat);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(44, 80), floorMat);
     floor.rotation.x = -Math.PI / 2;
-    floor.position.set(0, -2.6, -104);
+    floor.position.set(0, -2.6, -110);
     floor.renderOrder = -10;
     floorMat.depthWrite = false;
 
@@ -196,13 +222,14 @@ export class Rig {
       return cone;
     });
 
-    this.group.add(a.group, b.group, frame.group, wh.group, wh.streaks, floor, ...cones);
+    this.group.add(a.group, b.group, frame.group, cs.group, wh.group, wh.streaks, floor, ...cones);
+    this.console = cs.group;
     this.cores = [a.group, b.group];
     this.frame = frame;
     this.wheel = wh;
     this.coneMat = coneMat;
     this.floorMat = floorMat;
-    this.materials = [...a.materials, ...b.materials, ...frame.materials, ...wh.materials, floorMat];
+    this.materials = [...a.materials, ...b.materials, ...frame.materials, ...wh.materials, ...cs.materials, floorMat];
     for (const m of this.materials) m.userData.baseOpacity = m.opacity;
   }
 
@@ -223,6 +250,7 @@ export class Rig {
       ring1.rotation.z = time * 0.25 + spin;
       ring2.rotation.z = -time * 0.18 - spin * 0.6;
     });
+    this.console.rotation.y = 0.45 + Math.sin(time * 0.3) * 0.12;
     this.wheel.group.rotation.z = Math.sin(time * 0.7) * 0.35 + spin * 0.4;
     this.wheel.streaks.position.z = RIG_SPOTS.sim.z + ((time * 6) % 8);
   }

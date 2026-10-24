@@ -12,23 +12,23 @@ gsap.registerPlugin(ScrollTrigger);
 
 /** Viewport heights of scrolling per timeline unit. */
 export const UNIT = 0.8;
-export const TOTAL = 12.6;
+export const TOTAL = 13.3;
 
 // Where each nav link lands (timeline units, at a settled, readable moment).
-export const LABELS = { hero: 0, world: 1.45, identity: 2.55, battlestation: 6.8, community: 9.85, video: 11.7 };
+export const LABELS = { hero: 0, world: 1.45, identity: 2.55, battlestation: 6.8, community: 10.55, video: 12.4 };
 export const MARKS = [
-  [0, 'LEIXA'], [0.9, 'WORLD'], [2.2, 'IDENTITY'], [6.3, 'BATTLESTATION'], [9.15, 'COMMUNITY'], [10.75, 'VIDEO'],
+  [0, 'LEIXA'], [0.9, 'WORLD'], [2.2, 'IDENTITY'], [6.3, 'BATTLESTATION'], [9.85, 'COMMUNITY'], [11.45, 'VIDEO'],
 ];
 
 // identity: each card gets 0.4 travel + 0.3 hold
 const ID_ARRIVE = PANEL_LAYOUT.map((_, i) => 2.5 + i * 0.7);
 const ID_DEPART = ID_ARRIVE.map((t) => t + 0.3);
 // battlestation categories
-const RIG_ARRIVE = [6.75, 7.4, 8.1, 8.8];
+const RIG_ARRIVE = [6.75, 7.4, 8.1, 8.8, 9.5];
 const RIG_DEPART = RIG_ARRIVE.map((t) => t + 0.3);
-export const VIDEO_ACTIVE_FROM = 11.1;
+export const VIDEO_ACTIVE_FROM = 11.8;
 
-const focusPanel = (L) => ({ cx: -L.x * 0.15, cy: L.y + 0.35, cz: L.z + 11.5, tx: L.x * 0.42, ty: L.y + 0.15, tz: L.z - 0.6 });
+const focusPanel = (L) => ({ cx: -L.x * 0.15, cy: L.y + 0.35, cz: L.z + 12.2, tx: L.x * 0.42, ty: L.y + 0.15, tz: L.z - 0.6 });
 const focusRig = (p, side = 1) => ({ cx: p.x - 1.2 * side, cy: p.y + 1.4, cz: p.z + 11, tx: p.x + 1.9, ty: p.y + 0.55, tz: p.z });
 
 /**
@@ -90,24 +90,24 @@ export function buildChoreography({ world, video }) {
   });
   key(5.6, 0.35, { cx: 0.1, cy: 0.1, cz: -58.5, tx: 0.4, ty: 0, tz: -68, roll: 0.05 }, 'power1.inOut');
   key(5.95, 0.5, { cx: 0, cy: 0.8, cz: -76, tx: 0.8, ty: 0, tz: -86, roll: 0 }, 'power2.inOut');
-  const spots = [RIG_SPOTS.main, RIG_SPOTS.stream, RIG_SPOTS.peripherals, RIG_SPOTS.sim];
+  const spots = [RIG_SPOTS.main, RIG_SPOTS.stream, RIG_SPOTS.peripherals, RIG_SPOTS.console, RIG_SPOTS.sim];
   spots.forEach((p, i) => {
     const start = i === 0 ? 6.45 : RIG_DEPART[i - 1];
-    key(start, RIG_ARRIVE[i] - start, { ...focusRig(p, i === 2 ? -0.4 : 1), roll: i % 2 ? -0.02 : 0.02 });
+    key(start, RIG_ARRIVE[i] - start, { ...focusRig(p, p.x < 0 ? -0.4 : 1), roll: i % 2 ? -0.02 : 0.02 });
   });
   const N = NETWORK_CENTER;
-  key(9.1, 0.6, { cx: N.x - 1.5, cy: 1.0, cz: N.z + 16, tx: N.x - 3.4, ty: 0, tz: N.z, roll: 0.03 });
-  key(9.7, 0.9, { cx: N.x - 7.5, cy: -0.6, cz: N.z + 10, tx: N.x - 2.6, ty: 0.2, tz: N.z, roll: -0.02 }, 'sine.inOut');
+  key(9.8, 0.6, { cx: N.x - 1.5, cy: 1.0, cz: N.z + 16, tx: N.x - 3.4, ty: 0, tz: N.z, roll: 0.03 });
+  key(10.4, 0.9, { cx: N.x - 7.5, cy: -0.6, cz: N.z + 10, tx: N.x - 2.6, ty: 0.2, tz: N.z, roll: -0.02 }, 'sine.inOut');
   const R = RING_CENTER;
-  key(10.6, 0.7, { cx: 0, cy: 0.4, cz: R.z + 11.5, tx: 0.5, ty: 0, tz: R.z - 5, roll: 0 }, 'power2.inOut');
-  key(11.3, 1.3, { cx: 0.5, cy: 0.15, cz: R.z + 7, tx: 0.9, ty: 0, tz: R.z - 6 }, 'sine.out');
+  key(11.3, 0.7, { cx: 0, cy: 0.4, cz: R.z + 11.5, tx: 0.5, ty: 0, tz: R.z - 5, roll: 0 }, 'power2.inOut');
+  key(12, 1.3, { cx: 0.5, cy: 0.15, cz: R.z + 7, tx: 0.9, ty: 0, tz: R.z - 6 }, 'sine.out');
 
   // --------------------------------------------------------- atmosphere
   key(0, 1.4, { mood: 1, fogNear: 10, fogFar: 60, stars: 0.9, gridFloor: 0.75, bloom: 0.5 });
   key(2.0, 0.6, { mood: 2, fogNear: 8, fogFar: 48, gridFloor: 0.5, gridWalls: 0.3, bloom: 0.6, stars: 1 });
   key(5.9, 0.5, { mood: 3, fogNear: 9, fogFar: 78, gridFloor: 0.15, gridWalls: 0, bloom: 0.5 });
-  key(9.1, 0.5, { mood: 4, fogNear: 10, fogFar: 55, gridFloor: 0, bloom: 0.85 });
-  key(10.6, 0.6, { mood: 5, fogNear: 12, fogFar: 70, gridFloor: 0.2, bloom: 0.6 });
+  key(9.8, 0.5, { mood: 4, fogNear: 10, fogFar: 55, gridFloor: 0, bloom: 0.85 });
+  key(11.3, 0.6, { mood: 5, fogNear: 12, fogFar: 70, gridFloor: 0.2, bloom: 0.6 });
 
   // --------------------------------------------- LEIXA title choreography
   // Slides right and turns into a wall framing the next scene…
@@ -117,8 +117,8 @@ export function buildChoreography({ world, video }) {
   // …it re-forms behind the hardware and recedes into the scene…
   key(6.1, 0.05, { titleX: 1.5, titleY: 7.2, titleZ: -146, titleRY: 0, titleRX: 0.12, titleScale: 4.2 });
   key(6.4, 0.4, { titleFill: 0.75, titleEdge: 0.7 }, 'power1.out');
-  key(6.8, 2.3, { titleX: 2.5, titleY: 8.6, titleZ: -172, titleScale: 5 }, 'none');
-  key(9.1, 0.3, { titleFill: 0, titleEdge: 0 });
+  key(6.8, 3.0, { titleX: 2.5, titleY: 8.6, titleZ: -172, titleScale: 5 }, 'none');
+  key(9.8, 0.3, { titleFill: 0, titleEdge: 0 });
 
   // ------------------------------------------------------ world layers
   key(2.05, 0.45, { identity: 1 });
@@ -126,14 +126,14 @@ export function buildChoreography({ world, video }) {
   key(5.5, 0.35, { ribbon: 1, ribbonTwist: 0.45 }, 'power1.out');
   key(6.15, 0.25, { ribbon: 0, ribbonTwist: 0.7 });
   key(6.2, 0.4, { rig: 1 });
-  key(6.4, 2.7, { rigSpin: 4 }, 'none');
-  key(9.1, 0.4, { rig: 0 });
-  key(9.2, 0.4, { net: 1 });
-  key(9.1, 1.7, { netSpin: 1.5 }, 'none');
-  key(10.6, 0.4, { net: 0 });
-  key(10.5, 0.5, { ring: 1 });
-  key(10.5, 2.1, { ringRot: 1.4 }, 'none');
-  key(10.8, 0.5, { videoGlow: 1 });
+  key(6.4, 3.4, { rigSpin: 5 }, 'none');
+  key(9.8, 0.4, { rig: 0 });
+  key(9.9, 0.4, { net: 1 });
+  key(9.8, 1.7, { netSpin: 1.5 }, 'none');
+  key(11.3, 0.4, { net: 0 });
+  key(11.2, 0.5, { ring: 1 });
+  key(11.2, 2.1, { ringRot: 1.4 }, 'none');
+  key(11.5, 0.5, { videoGlow: 1 });
 
   /* -------------------------------------------------------- DOM: hero */
   tl.to('.hero__lockup', { y: -50, autoAlpha: 0, scale: 0.94, duration: 0.6, ease: 'power1.in' }, 0.1);
@@ -163,7 +163,7 @@ export function buildChoreography({ world, video }) {
 
   /* -------------------------------------------------- DOM: battlestation */
   tl.fromTo('.scene--rig', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25 }, 6.3);
-  tl.fromTo('.rig__bigword', { xPercent: 20 }, { xPercent: -75, duration: 3.0, ease: 'none' }, 6.3);
+  tl.fromTo('.rig__bigword', { xPercent: 20 }, { xPercent: -75, duration: 3.7, ease: 'none' }, 6.3);
   tl.fromTo('.scene--rig .scene__head', { x: -40, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.35, ease: 'power2.out' }, 6.4);
   document.querySelectorAll('[data-rig-panel]').forEach((panel, i) => {
     tl.fromTo(panel, { autoAlpha: 0, x: 90, rotationY: -18 }, { autoAlpha: 1, x: 0, rotationY: 0, duration: 0.3, ease: 'power3.out' }, RIG_ARRIVE[i] - 0.3);
@@ -174,23 +174,23 @@ export function buildChoreography({ world, video }) {
     tl.fromTo(li, { opacity: 0.3 }, { opacity: 1, duration: 0.1 }, RIG_ARRIVE[i] - 0.2);
     tl.to(li, { opacity: 0.3, duration: 0.1 }, RIG_DEPART[i] + 0.05);
   });
-  tl.to('.scene--rig', { autoAlpha: 0, duration: 0.25 }, 9.15);
+  tl.to('.scene--rig', { autoAlpha: 0, duration: 0.25 }, 9.85);
 
   /* ---------------------------------------------------- DOM: community */
-  tl.fromTo('.scene--discord', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25 }, 9.15);
+  tl.fromTo('.scene--discord', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25 }, 9.85);
   document.querySelectorAll('[data-dword]').forEach((w, i) => {
     const from = i % 2 ? -55 : 5;
-    tl.fromTo(w, { xPercent: from }, { xPercent: i % 2 ? 5 : -55, duration: 1.8, ease: 'none' }, 9.1);
+    tl.fromTo(w, { xPercent: from }, { xPercent: i % 2 ? 5 : -55, duration: 1.8, ease: 'none' }, 9.8);
   });
-  tl.fromTo('.discord__panel > *', { autoAlpha: 0, y: 34 }, { autoAlpha: 1, y: 0, duration: 0.3, stagger: 0.07, ease: 'power3.out' }, 9.4);
-  tl.fromTo('.discord__acts li', { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.2, stagger: 0.04, ease: 'power2.out' }, 9.6);
-  tl.to('.scene--discord', { autoAlpha: 0, duration: 0.3 }, 10.55);
+  tl.fromTo('.discord__panel > *', { autoAlpha: 0, y: 34 }, { autoAlpha: 1, y: 0, duration: 0.3, stagger: 0.07, ease: 'power3.out' }, 10.1);
+  tl.fromTo('.discord__acts li', { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.2, stagger: 0.04, ease: 'power2.out' }, 10.3);
+  tl.to('.scene--discord', { autoAlpha: 0, duration: 0.3 }, 11.25);
 
   /* -------------------------------------------------------- DOM: video */
-  tl.fromTo('.scene--video', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 10.75);
-  tl.fromTo('.video__head > *', { autoAlpha: 0, x: -50 }, { autoAlpha: 1, x: 0, duration: 0.35, stagger: 0.06, ease: 'power3.out' }, 10.8);
+  tl.fromTo('.scene--video', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 11.45);
+  tl.fromTo('.video__head > *', { autoAlpha: 0, x: -50 }, { autoAlpha: 1, x: 0, duration: 0.35, stagger: 0.06, ease: 'power3.out' }, 11.5);
   tl.fromTo('.player', { autoAlpha: 0, xPercent: 18, rotationY: -26, rotationX: 6, scale: 0.9 },
-    { autoAlpha: 1, xPercent: 0, rotationY: 0, rotationX: 0, scale: 1, duration: 0.55, ease: 'power3.out' }, 10.85);
+    { autoAlpha: 1, xPercent: 0, rotationY: 0, rotationX: 0, scale: 1, duration: 0.55, ease: 'power3.out' }, 11.55);
 
   /* ================================================================ eDPI */
   const E = { ...cursor };
@@ -243,7 +243,7 @@ export function buildChoreography({ world, video }) {
     const inJourney = tl.time() >= VIDEO_ACTIVE_FROM && tl.scrollTrigger.progress < 1;
     const leaving = edpiTl.scrollTrigger.progress > 0 && edpiTl.scrollTrigger.progress < 0.3;
     video.setActive(inJourney || leaving);
-    if (tl.time() > 10.2) video.prefetch?.();
+    if (tl.time() > 10.9) video.prefetch?.();
   };
 
   return {

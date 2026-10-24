@@ -125,7 +125,6 @@ function renderVideo() {
   const source = h('source', { 'data-src': v.src, type: v.type });
   video.append(source);
   $('[data-player] .player__frame').style.aspectRatio = `${v.width} / ${v.height}`;
-  $('[data-video-title]').textContent = v.title;
 
   const avatar = $('[data-avatar]');
   avatar.src = MEDIA.avatar.src;

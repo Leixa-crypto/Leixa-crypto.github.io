@@ -9,20 +9,36 @@ export function writeMotionPref(value) {
   try { localStorage.setItem(PREF_KEY, value); } catch { /* storage blocked */ }
 }
 
-function hasWebGL2() {
+/** WebGL 2 support plus the GPU name, when the browser exposes it. */
+function probeGpu() {
   try {
-    const c = document.createElement('canvas');
-    return !!c.getContext('webgl2');
+    const gl = document.createElement('canvas').getContext('webgl2');
+    if (!gl) return { webgl: false, gpu: '' };
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    const gpu = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    return { webgl: true, gpu: String(gpu || '') };
   } catch {
-    return false;
+    return { webgl: false, gpu: '' };
   }
+}
+
+// Max rendered pixels per frame. Text stays crisp regardless (it's DOM).
+const PIXEL_BUDGET = { high: 2.3e6, mid: 1.6e6, low: 1.1e6 };
+const DPR_CAP = { high: 1.5, mid: 1.25, low: 1.25 };
+
+/** Device pixel ratio for the canvas, capped by tier and a pixel budget. */
+export function pixelRatioFor(tier, w = innerWidth, h = innerHeight) {
+  const native = window.devicePixelRatio || 1;
+  const byBudget = Math.sqrt(PIXEL_BUDGET[tier] / Math.max(1, w * h));
+  return Math.max(0.7, Math.min(native, DPR_CAP[tier], byBudget));
 }
 
 export function detectQuality() {
   const params = new URLSearchParams(location.search);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const pref = params.get('motion') || readPref(); // 'on' | 'off' | null
-  const webgl = hasWebGL2();
+  const { webgl, gpu } = probeGpu();
 
   const coarse = matchMedia('(pointer: coarse)').matches;
   const shortSide = Math.min(screen.width, screen.height);
@@ -33,12 +49,13 @@ export function detectQuality() {
   let motion = pref ? pref === 'on' : !reduced;
   if (!webgl) motion = false;
 
-  let tier = 'high';
-  if (phone || memory <= 4) tier = 'low';
-  else if (coarse || cores < 8) tier = 'mid';
-  if (params.get('tier')) tier = params.get('tier');
+  const softwareGpu = /swiftshader|llvmpipe|software|basic render/i.test(gpu);
+  const integratedGpu = /intel|uhd|iris|vega \d|radeon\(tm\) graphics|mali|adreno/i.test(gpu);
 
-  const dprCap = { high: 1.75, mid: 1.35, low: 1.25 }[tier];
+  let tier = 'high';
+  if (phone || memory <= 4 || softwareGpu) tier = 'low';
+  else if (coarse || cores < 8 || integratedGpu) tier = 'mid';
+  if (params.get('tier')) tier = params.get('tier');
 
   return {
     motion,
@@ -47,9 +64,10 @@ export function detectQuality() {
     touch: coarse,
     phone,
     tier,
-    dpr: Math.min(window.devicePixelRatio || 1, dprCap),
+    gpu,
+    dpr: pixelRatioFor(tier),
     bloom: tier !== 'low',
-    msaa: tier === 'high' ? 4 : 0,
+    msaa: tier === 'high' ? 2 : 0,
     stars: { high: 1800, mid: 1100, low: 650 }[tier],
   };
 }
